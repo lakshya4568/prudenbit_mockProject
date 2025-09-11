@@ -78,6 +78,17 @@ export function GET(request: Request) {
     const limitParam = parseInt(searchParams.get("limit") || "12", 10);
     const pageParam = parseInt(searchParams.get("page") || "1", 10);
     const q = (searchParams.get("q") || "").trim().toLowerCase();
+    const issuesParam = (searchParams.get("issue") || "").trim(); // comma-separated
+    const hasEmailParam = searchParams.get("hasEmail");
+    const hasPhoneParam = searchParams.get("hasPhone");
+    const ageMinParam = searchParams.get("ageMin");
+    const ageMaxParam = searchParams.get("ageMax");
+    const sortBy = (searchParams.get("sortBy") || "").trim();
+    const order = (
+      (searchParams.get("order") || "asc").trim().toLowerCase() === "desc"
+        ? "desc"
+        : "asc"
+    ) as "asc" | "desc";
 
     const limit = clamp(Number.isFinite(limitParam) ? limitParam : 12, 1, 100);
     const page = clamp(
@@ -87,6 +98,33 @@ export function GET(request: Request) {
     );
 
     let rows = allPatients;
+    // Advanced Filters
+    const issues = issuesParam
+      ? issuesParam
+          .split(",")
+          .map((s) => s.trim().toLowerCase())
+          .filter(Boolean)
+      : [];
+    const hasEmail = hasEmailParam === "1" || hasEmailParam === "true";
+    const hasPhone = hasPhoneParam === "1" || hasPhoneParam === "true";
+    const ageMin = ageMinParam ? parseInt(ageMinParam, 10) : undefined;
+    const ageMax = ageMaxParam ? parseInt(ageMaxParam, 10) : undefined;
+
+    if (issues.length > 0) {
+      rows = rows.filter((p) => issues.includes(p.issue.toLowerCase()));
+    }
+    if (hasEmail) {
+      rows = rows.filter((p) => !!p.email);
+    }
+    if (hasPhone) {
+      rows = rows.filter((p) => !!p.phone);
+    }
+    if (Number.isFinite(ageMin)) {
+      rows = rows.filter((p) => p.age >= (ageMin as number));
+    }
+    if (Number.isFinite(ageMax)) {
+      rows = rows.filter((p) => p.age <= (ageMax as number));
+    }
     if (q) {
       rows = rows.filter((p) => {
         const id = p.id.toLowerCase();
@@ -101,6 +139,43 @@ export function GET(request: Request) {
           address.includes(q) ||
           email.includes(q)
         );
+      });
+    }
+
+    // Sorting
+    if (sortBy) {
+      const dir = order === "desc" ? -1 : 1;
+      rows = [...rows].sort((a, b) => {
+        let va: string | number = "";
+        let vb: string | number = "";
+        switch (sortBy) {
+          case "id":
+            va = a.id;
+            vb = b.id;
+            break;
+          case "name":
+            va = a.name;
+            vb = b.name;
+            break;
+          case "age":
+            va = a.age;
+            vb = b.age;
+            break;
+          case "issue":
+            va = a.issue;
+            vb = b.issue;
+            break;
+          case "email":
+            va = a.email ?? "";
+            vb = b.email ?? "";
+            break;
+          default:
+            return 0;
+        }
+        if (typeof va === "number" && typeof vb === "number") {
+          return (va - vb) * dir;
+        }
+        return String(va).localeCompare(String(vb)) * dir;
       });
     }
 
