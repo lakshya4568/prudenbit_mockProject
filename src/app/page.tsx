@@ -1,59 +1,95 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import PatientCard, { Patient } from "@/components/PatientCard";
 import HeaderBanner from "@/components/HeaderBanner";
 import PatientTable from "@/components/PatientTable";
+import rawData from "@/data/data.json";
 
-const patients: Patient[] = [
-  {
-    id: "ID-0001",
-    name: "Zoe Normanvill",
-    age: 77,
-    issue: "Fever",
-    issueColor: "red",
-    avatarSrc: "/images/Ellipse 1.png",
-    address: "5 Moulton Hill",
-    phone: "157-677-1133",
-    email: "smcneice0@geocities.com",
-  },
-  {
-    id: "ID-0002",
-    name: "Kellie Stagg",
-    age: 51,
-    issue: "Headache",
-    issueColor: "orange",
-    avatarSrc: "/images/Ellipse 7.svg",
-    address: "30112 Esker Center",
-    phone: "422-869-2249",
-    email: "Ideruagiero0@vk.com",
-  },
-  {
-    id: "ID-0003",
-    name: "Bertina Cottem",
-    age: 92,
-    issue: "Sore throat",
-    issueColor: "yellow",
-    avatarSrc: "/images/Ellipse 6.svg",
-    address: "83316 Buena Vista Alley",
-    phone: "359-159-3797",
-    email: "bmelonbv0@seattletimes.com",
-  },
-  {
-    id: "ID-0004",
-    name: "Dianemarie Goodge",
-    age: 75,
-    issue: "Sprained ankle",
-    issueColor: "green",
-    avatarSrc: "/images/Ellipse 8.svg",
-    address: "57 Northnort Pass",
-    phone: "672-425-6691",
-    email: "mhargreave0@ucoz.ru",
-  },
-];
+type RawPatient = {
+  patient_id: number;
+  patient_name: string;
+  age: number;
+  photo_url: string | null;
+  contact: Array<{
+    address: string | null;
+    number: string | null;
+    email: string | null;
+  }>;
+  medical_issue: string;
+};
+
+function idFromNumber(n: number): string {
+  return `ID-${String(n).padStart(4, "0")}`;
+}
+
+function capitalizeWords(s: string): string {
+  return s
+    .split(" ")
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ");
+}
+
+function issueColorFor(issue: string): Patient["issueColor"] {
+  const key = issue.toLowerCase();
+  if (key.includes("fever")) return "red";
+  if (key.includes("headache")) return "orange";
+  if (key.includes("sore")) return "yellow";
+  if (key.includes("sprained") || key.includes("ankle")) return "green";
+  if (key.includes("ear")) return "cyan";
+  if (key.includes("rash")) return "pink";
+  if (key.includes("allergic")) return "orange";
+  if (key.includes("stomach")) return "yellow";
+  if (key.includes("sinus")) return "cyan";
+  if (key.includes("broken")) return "red";
+  return "gray" as unknown as Patient["issueColor"]; // fallback, not used in type
+}
+
+const allPatientsFromJson: Patient[] = (rawData as RawPatient[]).map((rp) => {
+  const c = rp.contact?.[0];
+  const issue = capitalizeWords(rp.medical_issue);
+  return {
+    id: idFromNumber(rp.patient_id),
+    name: rp.patient_name,
+    age: rp.age,
+    issue,
+    issueColor: issueColorFor(issue),
+    // Avoid using remote avatars to prevent domain config; leave undefined
+    avatarSrc: undefined,
+    address: c?.address ?? "N/A",
+    phone: c?.number ?? null,
+    email: c?.email ?? null,
+  } satisfies Patient;
+});
 
 export default function Page() {
   const [view, setView] = useState<"card" | "table">("card");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(searchQuery.trim()), 250);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
+  const patients = useMemo(() => {
+    if (!debouncedQuery) return allPatientsFromJson;
+    const q = debouncedQuery.toLowerCase();
+    return allPatientsFromJson.filter((p) => {
+      const id = p.id.toLowerCase();
+      const name = p.name.toLowerCase();
+      const issue = p.issue.toLowerCase();
+      const address = (p.address ?? "").toLowerCase();
+      const email = (p.email ?? "").toLowerCase();
+      return (
+        id.includes(q) ||
+        name.includes(q) ||
+        issue.includes(q) ||
+        address.includes(q) ||
+        email.includes(q)
+      );
+    });
+  }, [debouncedQuery]);
   return (
     <main className="min-h-screen bg-white">
       <HeaderBanner />
@@ -112,6 +148,8 @@ export default function Page() {
                 <input
                   placeholder="Search"
                   className="flex-1 bg-transparent outline-none text-blue-500 placeholder:text-blue-500"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <button className="flex items-center justify-center p-2 hover:bg-gray-50 rounded">
@@ -181,7 +219,11 @@ export default function Page() {
         </div>
 
         {/* View content */}
-        {view === "card" ? (
+        {patients.length === 0 ? (
+          <div className="py-16 text-center text-gray-500">
+            No results found.
+          </div>
+        ) : view === "card" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {patients.map((p) => (
               <PatientCard key={p.id} patient={p} />
