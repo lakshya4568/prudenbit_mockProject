@@ -4,92 +4,68 @@ import Image from "next/image";
 import PatientCard, { Patient } from "@/components/PatientCard";
 import HeaderBanner from "@/components/HeaderBanner";
 import PatientTable from "@/components/PatientTable";
-import rawData from "@/data/data.json";
-
-type RawPatient = {
-  patient_id: number;
-  patient_name: string;
-  age: number;
-  photo_url: string | null;
-  contact: Array<{
-    address: string | null;
-    number: string | null;
-    email: string | null;
-  }>;
-  medical_issue: string;
+type ApiPatient = Omit<Patient, "issueColor"> & {
+  issueColor: Patient["issueColor"] | "gray";
 };
-
-function idFromNumber(n: number): string {
-  return `ID-${String(n).padStart(4, "0")}`;
-}
-
-function capitalizeWords(s: string): string {
-  return s
-    .split(" ")
-    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
-    .join(" ");
-}
-
-function issueColorFor(issue: string): Patient["issueColor"] {
-  const key = issue.toLowerCase();
-  if (key.includes("fever")) return "red";
-  if (key.includes("headache")) return "orange";
-  if (key.includes("sore")) return "yellow";
-  if (key.includes("sprained") || key.includes("ankle")) return "green";
-  if (key.includes("ear")) return "cyan";
-  if (key.includes("rash")) return "pink";
-  if (key.includes("allergic")) return "orange";
-  if (key.includes("stomach")) return "yellow";
-  if (key.includes("sinus")) return "cyan";
-  if (key.includes("broken")) return "red";
-  return "gray" as unknown as Patient["issueColor"]; // fallback, not used in type
-}
-
-const allPatientsFromJson: Patient[] = (rawData as RawPatient[]).map((rp) => {
-  const c = rp.contact?.[0];
-  const issue = capitalizeWords(rp.medical_issue);
-  return {
-    id: idFromNumber(rp.patient_id),
-    name: rp.patient_name,
-    age: rp.age,
-    issue,
-    issueColor: issueColorFor(issue),
-    // Avoid using remote avatars to prevent domain config; leave undefined
-    avatarSrc: undefined,
-    address: c?.address ?? "N/A",
-    phone: c?.number ?? null,
-    email: c?.email ?? null,
-  } satisfies Patient;
-});
+type ApiResponse = {
+  data: ApiPatient[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
 
 export default function Page() {
   const [view, setView] = useState<"card" | "table">("card");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(12);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(searchQuery.trim()), 250);
     return () => clearTimeout(t);
   }, [searchQuery]);
 
-  const patients = useMemo(() => {
-    if (!debouncedQuery) return allPatientsFromJson;
-    const q = debouncedQuery.toLowerCase();
-    return allPatientsFromJson.filter((p) => {
-      const id = p.id.toLowerCase();
-      const name = p.name.toLowerCase();
-      const issue = p.issue.toLowerCase();
-      const address = (p.address ?? "").toLowerCase();
-      const email = (p.email ?? "").toLowerCase();
-      return (
-        id.includes(q) ||
-        name.includes(q) ||
-        issue.includes(q) ||
-        address.includes(q) ||
-        email.includes(q)
-      );
-    });
-  }, [debouncedQuery]);
+  useEffect(() => {
+    let abort = false;
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(limit),
+        });
+        if (debouncedQuery) params.set("q", debouncedQuery);
+        const res = await fetch(`/api/data?${params.toString()}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json: ApiResponse = await res.json();
+        if (abort) return;
+        // Map any unknown issueColor (e.g., 'gray') to a supported one
+        const mapped: Patient[] = json.data.map((p) => ({
+          ...p,
+          issueColor: (p.issueColor === "gray"
+            ? "cyan"
+            : p.issueColor) as Patient["issueColor"],
+        }));
+        setPatients(mapped);
+        setTotalPages(json.totalPages || 1);
+      } catch (e: any) {
+        if (!abort) setError(e?.message ?? "Failed to load data");
+      } finally {
+        if (!abort) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      abort = true;
+    };
+  }, [page, limit, debouncedQuery]);
   return (
     <main className="min-h-screen bg-white">
       <HeaderBanner />
@@ -219,7 +195,11 @@ export default function Page() {
         </div>
 
         {/* View content */}
-        {patients.length === 0 ? (
+        {loading ? (
+          <div className="py-16 text-center text-gray-500">Loading…</div>
+        ) : error ? (
+          <div className="py-16 text-center text-red-600">{error}</div>
+        ) : patients.length === 0 ? (
           <div className="py-16 text-center text-gray-500">
             No results found.
           </div>
@@ -232,6 +212,37 @@ export default function Page() {
         ) : (
           <PatientTable patients={patients} />
         )}
+
+        {/* Pagination controls */}
+        <div className="mt-6 flex items-center justify-between">
+          <span className="text-sm text-gray-600">
+            Page {page} of {totalPages}
+          </span>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1 || loading}
+              className={`inline-flex items-center rounded border px-3 py-2 text-sm ${
+                page <= 1 || loading
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-gray-50"
+              }`}
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages || loading}
+              className={`inline-flex items-center rounded border px-3 py-2 text-sm ${
+                page >= totalPages || loading
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-gray-50"
+              }`}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </section>
     </main>
   );
