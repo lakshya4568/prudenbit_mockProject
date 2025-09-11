@@ -252,12 +252,6 @@ export default function SimpleList() {
 - `src/data/` — Dataset files used by the local API.
 - `demo/` — Vite-based playground and UI primitives for prototyping.
 
-### How to extend or modify
-
-- Add an API filter: update `src/app/api/data/route.ts` to accept and apply the new param before sorting/pagination.
-- Add a view: create a new client component in `src/components/` and import/render it from `src/app/page.tsx` or a relevant parent.
-- Add tests: integrate a test runner (Vitest / Jest + React Testing Library) and add tests in a `tests/` directory.
-
 ### Contribution workflow
 
 1. Fork the repository and create a feature branch.
@@ -267,16 +261,4 @@ export default function SimpleList() {
 
 ---
 
-## Troubleshooting & Next Steps
 
-- If you see TypeScript errors after pulling, run `pnpm install` and verify your Node.js version. Restart the dev server.
-- The `demo/` folder can run separately with Vite; inspect its `package.json` scripts.
-
-### Suggested improvements
-
-- Add server-side caching for repeated API queries to improve response times.
-- Implement a debounced search input on the client to reduce requests while typing.
-- Add both Card and Table views and a toggle to switch between them.
-- Provide a small `OpenAPI` or JSON Schema for the API route response and types.
-
----
