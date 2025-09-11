@@ -14,7 +14,7 @@ export default function PatientTable({ patients, className = "" }: Props) {
     <div
       className={`w-full overflow-x-auto bg-white rounded-lg shadow-sm ${className}`}
     >
-      <table className="w-full border-separate border-spacing-0">
+      <table className="w-full border-collapse">
         <thead>
           <tr className="bg-transparent">
             <Th>ID</Th>
@@ -28,7 +28,11 @@ export default function PatientTable({ patients, className = "" }: Props) {
         </thead>
         <tbody>
           {patients.map((p) => (
-            <tr key={p.id} className="border-b border-gray-200 last:border-0">
+            <tr
+              key={p.id}
+              className="border-b-2"
+              style={{ borderBottomColor: "#949494" }}
+            >
               <Td className="w-[90px] text-center">{p.id}</Td>
               <Td>
                 <div className="flex items-center gap-3 min-w-0">
@@ -65,7 +69,10 @@ export default function PatientTable({ patients, className = "" }: Props) {
 
 function Th({ children }: { children: React.ReactNode }) {
   return (
-    <th className="text-left py-4 px-4 text-sm font-extrabold text-blue-500 border-b border-gray-200">
+    <th
+      className="text-left py-4 px-4 text-sm font-extrabold text-blue-500 border-b-2"
+      style={{ borderBottomColor: "#949494" }}
+    >
       {children}
     </th>
   );
