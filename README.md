@@ -280,8 +280,3 @@ export default function SimpleList() {
 - Provide a small `OpenAPI` or JSON Schema for the API route response and types.
 
 ---
-
-If you'd like, I can now:
-
-- Run `pnpm install` and `pnpm dev` to verify the app boots locally, or
-- Open `src/app/api/data/route.ts` to generate exact API parameter docs and example responses (I can add an OpenAPI snippet).
