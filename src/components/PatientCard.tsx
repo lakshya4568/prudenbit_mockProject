@@ -85,4 +85,4 @@ export function PatientCard({ patient }: { patient: Patient }) {
   );
 }
 
-export default PatientCard;
+export default React.memo(PatientCard);

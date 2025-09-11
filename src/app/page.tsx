@@ -49,8 +49,10 @@ export default function Page() {
   const [sortBy, setSortBy] = useState<SortField>("");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
 
-  const activeFilters =
-    selectedIssues.length + (hasEmail ? 1 : 0) + (hasPhone ? 1 : 0);
+  const activeFilters = useMemo(
+    () => selectedIssues.length + (hasEmail ? 1 : 0) + (hasPhone ? 1 : 0),
+    [selectedIssues, hasEmail, hasPhone]
+  );
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(searchQuery.trim()), 250);
@@ -62,7 +64,8 @@ export default function Page() {
   }, [debouncedQuery, selectedIssues, hasEmail, hasPhone, sortBy, order]);
 
   useEffect(() => {
-    let abort = false;
+    const ctrl = new AbortController();
+    let aborted = false;
     async function load() {
       setLoading(true);
       setError(null);
@@ -78,10 +81,12 @@ export default function Page() {
         if (hasPhone) params.set("hasPhone", "1");
         if (sortBy) params.set("sortBy", sortBy);
         if (order) params.set("order", order);
-        const res = await fetch(`/api/data?${params.toString()}`);
+        const res = await fetch(`/api/data?${params.toString()}`, {
+          signal: ctrl.signal,
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json: ApiResponse = await res.json();
-        if (abort) return;
+        if (aborted) return;
         const mapped: Patient[] = json.data.map((p) => ({
           ...p,
           issueColor: (p.issueColor === "gray"
@@ -91,14 +96,16 @@ export default function Page() {
         setPatients(mapped);
         setTotalPages(json.totalPages || 1);
       } catch (e: any) {
-        if (!abort) setError(e?.message ?? "Failed to load data");
+        if (!aborted && e?.name !== "AbortError")
+          setError(e?.message ?? "Failed to load data");
       } finally {
-        if (!abort) setLoading(false);
+        if (!aborted) setLoading(false);
       }
     }
     load();
     return () => {
-      abort = true;
+      aborted = true;
+      ctrl.abort();
     };
   }, [
     page,

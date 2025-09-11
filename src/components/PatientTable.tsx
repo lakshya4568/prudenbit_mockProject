@@ -9,7 +9,7 @@ type Props = {
   className?: string;
 };
 
-export default function PatientTable({ patients, className = "" }: Props) {
+function PatientTable({ patients, className = "" }: Props) {
   return (
     <div
       className={`w-full overflow-x-auto bg-white rounded-lg shadow-sm ${className}`}
@@ -96,3 +96,5 @@ function naOrValue(value: string | null): React.ReactNode {
   if (!value) return <span className="text-red-600">N/A</span>;
   return value;
 }
+
+export default React.memo(PatientTable);
