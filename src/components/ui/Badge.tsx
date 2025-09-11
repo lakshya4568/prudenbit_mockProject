@@ -1,6 +1,10 @@
 "use client";
 import React from "react";
 
+/**
+ * Badge
+ * Small colored label for status/category emphasis.
+ */
 type BadgeProps = {
   children: React.ReactNode;
   color?:

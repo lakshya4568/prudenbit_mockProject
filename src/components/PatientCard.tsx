@@ -3,6 +3,10 @@ import Image from "next/image";
 import React from "react";
 import Badge from "./ui/Badge";
 
+/**
+ * PatientCard
+ * Renders a compact card view for a patient with key details and a colored issue badge.
+ */
 export type Patient = {
   id: string;
   name: string;
@@ -42,11 +46,13 @@ export function PatientCard({ patient }: { patient: Patient }) {
             </div>
           </div>
         </div>
+        {/* Keeping age as a small prominent chip at top-right */}
         <span className="inline-flex items-center rounded-full bg-blue-500 text-white text-xs px-3 py-1 font-semibold">
           Age:{age}
         </span>
       </div>
       <div className="px-5 py-4 space-y-3">
+        {/* Issue badge uses semantic color for quick scanning */}
         <Badge color={issueColor}>{issue}</Badge>
         <div className="space-y-2 text-gray-800 text-sm">
           <div className="flex gap-3 items-center">

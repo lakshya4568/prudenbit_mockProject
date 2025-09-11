@@ -1,13 +1,25 @@
 "use client";
+/**
+ * Main Page
+ *
+ * Provides patient browsing with:
+ * - dual views (card/table)
+ * - debounced global search
+ * - filtering (issues, hasEmail, hasPhone)
+ * - sorting and pagination
+ * - loading/error/empty UI states
+ */
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import PatientCard, { Patient } from "@/components/PatientCard";
 import HeaderBanner from "@/components/HeaderBanner";
 import PatientTable from "@/components/PatientTable";
 
+/** Patient payload as returned by the API route */
 type ApiPatient = Omit<Patient, "issueColor"> & {
   issueColor: Patient["issueColor"] | "gray";
 };
+/** Shape of /api/data response */
 type ApiResponse = {
   data: ApiPatient[];
   total: number;
@@ -27,6 +39,7 @@ export default function Page() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Static options (memoized to avoid new array on each render)
   const ISSUE_OPTIONS = useMemo(
     () => [
       "Fever",
@@ -49,20 +62,24 @@ export default function Page() {
   const [sortBy, setSortBy] = useState<SortField>("");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
 
+  // Present a simple count in the UI for user awareness
   const activeFilters = useMemo(
     () => selectedIssues.length + (hasEmail ? 1 : 0) + (hasPhone ? 1 : 0),
     [selectedIssues, hasEmail, hasPhone]
   );
 
+  // Debounce input to limit network calls while typing
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(searchQuery.trim()), 250);
     return () => clearTimeout(t);
   }, [searchQuery]);
 
+  // Reset to first page whenever query/sort/filter changes
   useEffect(() => {
     setPage(1);
   }, [debouncedQuery, selectedIssues, hasEmail, hasPhone, sortBy, order]);
 
+  // Fetch data when the dependency set changes; cancel in-flight requests
   useEffect(() => {
     const ctrl = new AbortController();
     let aborted = false;
@@ -87,6 +104,7 @@ export default function Page() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json: ApiResponse = await res.json();
         if (aborted) return;
+        // Map to strict Patient type; coerce unknown colors to a safe default
         const mapped: Patient[] = json.data.map((p) => ({
           ...p,
           issueColor: (p.issueColor === "gray"

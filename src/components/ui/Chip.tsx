@@ -1,6 +1,10 @@
 "use client";
 import React from "react";
 
+/**
+ * Chip
+ * Pill-like container with optional remove action.
+ */
 type ChipProps = {
   children: React.ReactNode;
   onRemove?: () => void;

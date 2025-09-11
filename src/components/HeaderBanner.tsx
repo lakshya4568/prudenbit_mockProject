@@ -1,5 +1,11 @@
 import Image from "next/image";
 
+/**
+ * HeaderBanner
+ * Static banner for the directory with decorative right-side vectors.
+ * Positions are precomputed to avoid SSR/CSR mismatch.
+ */
+
 export default function HeaderBanner() {
   const vectors = [
     "/images/Vector-1.png",

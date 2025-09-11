@@ -1,6 +1,23 @@
+/**
+ * API Route: GET /api/data
+ *
+ * Serves patient data with server-side filtering, sorting, and pagination.
+ *
+ * Query params:
+ * - limit: number (1-100)
+ * - page: number (1..)
+ * - q: string (global text search across id, name, issue, address, email)
+ * - issue: comma-separated list of issue names to include (case-insensitive)
+ * - hasEmail: '1' | 'true' to require email
+ * - hasPhone: '1' | 'true' to require phone
+ * - ageMin, ageMax: numeric range bounds
+ * - sortBy: 'id' | 'name' | 'age' | 'issue' | 'email'
+ * - order: 'asc' | 'desc'
+ */
 import { NextResponse } from "next/server";
 import rawData from "@/data/data.json";
 
+/** Raw shape in data.json */
 type RawPatient = {
   patient_id: number;
   patient_name: string;
@@ -14,6 +31,7 @@ type RawPatient = {
   medical_issue: string;
 };
 
+/** Normalized patient shape returned by the API */
 type Patient = {
   id: string;
   name: string;
@@ -26,10 +44,12 @@ type Patient = {
   email: string | null;
 };
 
+/** Converts numeric id to UI-friendly id like ID-0001 */
 function idFromNumber(n: number): string {
   return `ID-${String(n).padStart(4, "0")}`;
 }
 
+/** Capitalizes each word boundary for consistent labels */
 function capitalizeWords(s: string): string {
   return s
     .split(" ")
@@ -37,6 +57,7 @@ function capitalizeWords(s: string): string {
     .join(" ");
 }
 
+/** Maps issue keywords to color categories used by the UI */
 function issueColorFor(issue: string): Patient["issueColor"] {
   const key = issue.toLowerCase();
   if (key.includes("fever")) return "red";
@@ -52,6 +73,7 @@ function issueColorFor(issue: string): Patient["issueColor"] {
   return "gray";
 }
 
+/** Normalize raw dataset once per module load for performance */
 const allPatients: Patient[] = (rawData as RawPatient[]).map((rp) => {
   const c = rp.contact?.[0];
   const issue = capitalizeWords(rp.medical_issue);
@@ -68,6 +90,7 @@ const allPatients: Patient[] = (rawData as RawPatient[]).map((rp) => {
   } satisfies Patient;
 });
 
+/** Bounds a number to [min, max] */
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
@@ -75,6 +98,7 @@ function clamp(n: number, min: number, max: number) {
 export function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
+    // Parse and sanitize query parameters
     const limitParam = parseInt(searchParams.get("limit") || "12", 10);
     const pageParam = parseInt(searchParams.get("page") || "1", 10);
     const q = (searchParams.get("q") || "").trim().toLowerCase();
@@ -97,8 +121,8 @@ export function GET(request: Request) {
       1_000_000
     );
 
-    let rows = allPatients;
-    // Advanced Filters
+  let rows = allPatients;
+  // Advanced Filters
     const issues = issuesParam
       ? issuesParam
           .split(",")
@@ -142,7 +166,7 @@ export function GET(request: Request) {
       });
     }
 
-    // Sorting
+    // Sorting — applied before pagination for correctness
     if (sortBy) {
       const dir = order === "desc" ? -1 : 1;
       rows = [...rows].sort((a, b) => {
@@ -193,6 +217,7 @@ export function GET(request: Request) {
       totalPages,
     });
   } catch (err) {
+    // Hide internal errors from the client
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

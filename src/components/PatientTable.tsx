@@ -4,6 +4,10 @@ import React from "react";
 import Badge from "./ui/Badge";
 import type { Patient } from "./PatientCard";
 
+/**
+ * PatientTable
+ * Compact row-based view for fast scanning and comparison.
+ */
 type Props = {
   patients: Patient[];
   className?: string;
