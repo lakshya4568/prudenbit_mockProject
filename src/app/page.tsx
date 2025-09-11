@@ -1,8 +1,9 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import PatientCard, { Patient } from "@/components/PatientCard";
 import HeaderBanner from "@/components/HeaderBanner";
+import PatientTable from "@/components/PatientTable";
 
 const patients: Patient[] = [
   {
@@ -52,6 +53,7 @@ const patients: Patient[] = [
 ];
 
 export default function Page() {
+  const [view, setView] = useState<"card" | "table">("card");
   return (
     <main className="min-h-screen bg-white">
       <HeaderBanner />
@@ -59,16 +61,27 @@ export default function Page() {
       <section className="mx-auto max-w-7xl px-6 py-6">
         {/* View tabs and Active Filters */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex flex-col">
-            <div className="flex gap-8 text-gray-900">
-              <button className="pb-2 font-semibold text-gray-400">
-                Table View
-              </button>
-              <button className="pb-2 font-semibold text-[#191d23]">
-                Card View
-              </button>
-            </div>
-            <div className="h-[1.5px] w-24 bg-blue-500 mt-0.5 ml-[104px]" />
+          <div className="flex gap-8 text-gray-900">
+            <button
+              className={`pb-2 font-semibold border-b-2 transition-colors ${
+                view === "table"
+                  ? "text-[#191d23] border-blue-500"
+                  : "text-gray-400 border-transparent"
+              }`}
+              onClick={() => setView("table")}
+            >
+              Table View
+            </button>
+            <button
+              className={`pb-2 font-semibold border-b-2 transition-colors ${
+                view === "card"
+                  ? "text-[#191d23] border-blue-500"
+                  : "text-gray-400 border-transparent"
+              }`}
+              onClick={() => setView("card")}
+            >
+              Card View
+            </button>
           </div>
           <div className="flex items-center gap-3">
             <Image
@@ -120,29 +133,23 @@ export default function Page() {
             </span>
             <button className="inline-flex items-center justify-between gap-3 rounded border border-gray-300 px-4 py-2.5 min-w-[140px] text-sm font-medium bg-white hover:bg-gray-50 transition-colors">
               <span className="text-gray-700">option 1</span>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                className="text-gray-500"
-              >
-                <path d="M8 3L11 6H5L8 3Z" fill="currentColor" />
-                <path d="M8 13L5 10H11L8 13Z" fill="currentColor" />
-              </svg>
+              <Image
+                src="/images/sorty.png"
+                alt="Sort"
+                width={16}
+                height={16}
+                className="w-4 h-4"
+              />
             </button>
             <button className="inline-flex items-center justify-between gap-3 rounded border border-gray-300 px-4 py-2.5 min-w-[140px] text-sm font-medium bg-white hover:bg-gray-50 transition-colors">
               <span className="text-gray-700">option 1</span>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                className="text-gray-500"
-              >
-                <path d="M8 3L11 6H5L8 3Z" fill="currentColor" />
-                <path d="M8 13L5 10H11L8 13Z" fill="currentColor" />
-              </svg>
+              <Image
+                src="/images/sorty.png"
+                alt="Sort"
+                width={16}
+                height={16}
+                className="w-4 h-4"
+              />
             </button>
           </div>
         </div>
@@ -173,12 +180,16 @@ export default function Page() {
           ))}
         </div>
 
-        {/* Card grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {patients.map((p) => (
-            <PatientCard key={p.id} patient={p} />
-          ))}
-        </div>
+        {/* View content */}
+        {view === "card" ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {patients.map((p) => (
+              <PatientCard key={p.id} patient={p} />
+            ))}
+          </div>
+        ) : (
+          <PatientTable patients={patients} />
+        )}
       </section>
     </main>
   );
