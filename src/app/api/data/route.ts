@@ -216,7 +216,7 @@ export function GET(request: Request) {
       limit,
       totalPages,
     });
-  } catch (err) {
+  } catch (_err) {
     // Hide internal errors from the client
     return NextResponse.json(
       { error: "Internal Server Error" },

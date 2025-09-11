@@ -260,5 +260,3 @@ export default function SimpleList() {
 4. Open a pull request describing the change and its motivation.
 
 ---
-
-

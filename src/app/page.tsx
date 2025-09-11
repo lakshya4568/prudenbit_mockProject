@@ -113,9 +113,20 @@ export default function Page() {
         }));
         setPatients(mapped);
         setTotalPages(json.totalPages || 1);
-      } catch (e: any) {
-        if (!aborted && e?.name !== "AbortError")
-          setError(e?.message ?? "Failed to load data");
+      } catch (e: unknown) {
+        if (aborted) return;
+        if (
+          e &&
+          typeof e === "object" &&
+          (e as { name?: string }).name === "AbortError"
+        ) {
+          return;
+        }
+        if (e && typeof e === "object" && "message" in e) {
+          setError(String((e as { message: unknown }).message));
+        } else {
+          setError("Failed to load data");
+        }
       } finally {
         if (!aborted) setLoading(false);
       }
