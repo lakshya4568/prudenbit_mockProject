@@ -57,86 +57,94 @@ export default function Page() {
       <HeaderBanner />
 
       <section className="mx-auto max-w-7xl px-6 py-6">
-        {/* View tabs and controls */}
-        <div className="flex items-start justify-between mb-6">
+        {/* View tabs and Active Filters */}
+        <div className="flex items-center justify-between mb-4">
           <div className="flex flex-col">
             <div className="flex gap-8 text-gray-900">
-              <button className="pb-2 font-semibold text-gray-900">
+              <button className="pb-2 font-semibold text-gray-400">
                 Table View
               </button>
-              <button className="pb-2 font-semibold text-gray-400">
+              <button className="pb-2 font-semibold text-[#191d23]">
                 Card View
               </button>
             </div>
-            <div className="h-[2px] w-20 bg-blue-500" />
+            <div className="h-[1.5px] w-24 bg-blue-500 mt-0.5 ml-[104px]" />
           </div>
-          <div className="flex items-center gap-4">
-            <button className="flex items-center justify-center w-11 h-11 rounded border border-gray-300 bg-white hover:bg-gray-50">
-              <Image
-                src="/images/filter.svg"
-                alt="Filter"
-                width={18}
-                height={12}
-                className="w-[18px] h-3"
-              />
-            </button>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/images/filter.svg"
+              alt="Filter"
+              width={18}
+              height={12}
+              className="w-[18px] h-3 text-blue-500"
+            />
             <span className="text-sm font-medium text-gray-700">
               Active Filters: 4
             </span>
           </div>
         </div>
 
-        {/* Sort by section */}
-        <div className="flex items-center justify-end gap-3 mb-6">
-          <span className="text-blue-500 font-bold text-lg">Sort by:</span>
-          <button className="inline-flex items-center justify-between gap-3 rounded border border-gray-300 px-4 py-2.5 min-w-[140px] text-sm font-medium bg-white hover:bg-gray-50 transition-colors">
-            <span className="text-gray-700">option 1</span>
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              className="text-gray-500"
-            >
-              <path d="M8 3L11 6H5L8 3Z" fill="currentColor" />
-              <path d="M8 13L5 10H11L8 13Z" fill="currentColor" />
-            </svg>
-          </button>
-          <button className="inline-flex items-center justify-between gap-3 rounded border border-gray-300 px-4 py-2.5 min-w-[140px] text-sm font-medium bg-white hover:bg-gray-50 transition-colors">
-            <span className="text-gray-700">option 1</span>
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              className="text-gray-500"
-            >
-              <path d="M8 3L11 6H5L8 3Z" fill="currentColor" />
-              <path d="M8 13L5 10H11L8 13Z" fill="currentColor" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Search + filter icon */}
-        <div className="flex items-center gap-4 mb-4">
-          <div className="flex-1 relative rounded border border-gray-300 px-4 py-3 bg-white">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              🔍
-            </span>
-            <input
-              placeholder="Search"
-              className="w-full pl-7 bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
-            />
+        {/* Search bar with Sort by section */}
+        <div className="flex items-center gap-6 mb-4">
+          <div className="flex-1 relative">
+            <div className="flex items-center border border-[#8f8f8f] rounded px-4 py-3 bg-white">
+              <div className="flex items-center gap-3 flex-1">
+                <Image
+                  src="/images/Icons.svg"
+                  alt="Search"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6"
+                />
+                <input
+                  placeholder="Search"
+                  className="flex-1 bg-transparent outline-none text-blue-500 placeholder:text-blue-500"
+                />
+              </div>
+              <button className="flex items-center justify-center p-2 hover:bg-gray-50 rounded">
+                <Image
+                  src="/images/filter.svg"
+                  alt="Filter"
+                  width={18}
+                  height={12}
+                  className="w-[18px] h-3"
+                />
+              </button>
+            </div>
           </div>
-          <button className="flex items-center justify-center w-12 h-12 rounded border border-gray-300 bg-white hover:bg-gray-50">
-            <Image
-              src="/images/filter.svg"
-              alt="Filter"
-              width={18}
-              height={12}
-              className="w-[18px] h-3"
-            />
-          </button>
+
+          {/* Sort by section */}
+          <div className="flex items-center gap-3">
+            <span className="text-blue-500 font-bold text-lg whitespace-nowrap">
+              Sort by:
+            </span>
+            <button className="inline-flex items-center justify-between gap-3 rounded border border-gray-300 px-4 py-2.5 min-w-[140px] text-sm font-medium bg-white hover:bg-gray-50 transition-colors">
+              <span className="text-gray-700">option 1</span>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                className="text-gray-500"
+              >
+                <path d="M8 3L11 6H5L8 3Z" fill="currentColor" />
+                <path d="M8 13L5 10H11L8 13Z" fill="currentColor" />
+              </svg>
+            </button>
+            <button className="inline-flex items-center justify-between gap-3 rounded border border-gray-300 px-4 py-2.5 min-w-[140px] text-sm font-medium bg-white hover:bg-gray-50 transition-colors">
+              <span className="text-gray-700">option 1</span>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                className="text-gray-500"
+              >
+                <path d="M8 3L11 6H5L8 3Z" fill="currentColor" />
+                <path d="M8 13L5 10H11L8 13Z" fill="currentColor" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Filter chips */}

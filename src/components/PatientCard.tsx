@@ -49,16 +49,34 @@ export function PatientCard({ patient }: { patient: Patient }) {
       <div className="px-5 py-4 space-y-3">
         <Badge color={issueColor}>{issue}</Badge>
         <div className="space-y-2 text-gray-800 text-sm">
-          <div className="flex gap-3">
-            <span className="text-gray-500">•</span>
+          <div className="flex gap-3 items-center">
+            <Image
+              src="/images/Location on.svg"
+              alt="Location"
+              width={20}
+              height={20}
+              className="w-5 h-5 flex-shrink-0"
+            />
             <span>{address}</span>
           </div>
-          <div className="flex gap-3">
-            <span className="text-gray-500">•</span>
+          <div className="flex gap-3 items-center">
+            <Image
+              src="/images/Phone.svg"
+              alt="Phone"
+              width={20}
+              height={20}
+              className="w-5 h-5 flex-shrink-0"
+            />
             <span>{phone ?? <span className="text-red-600">N/A</span>}</span>
           </div>
-          <div className="flex gap-3">
-            <span className="text-gray-500">•</span>
+          <div className="flex gap-3 items-center">
+            <Image
+              src="/images/Email.svg"
+              alt="Email"
+              width={20}
+              height={20}
+              className="w-5 h-5 flex-shrink-0"
+            />
             <span>{email ?? <span className="text-red-600">N/A</span>}</span>
           </div>
         </div>
