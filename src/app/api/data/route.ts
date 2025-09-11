@@ -121,8 +121,8 @@ export function GET(request: Request) {
       1_000_000
     );
 
-  let rows = allPatients;
-  // Advanced Filters
+    let rows = allPatients;
+    // Advanced Filters
     const issues = issuesParam
       ? issuesParam
           .split(",")
